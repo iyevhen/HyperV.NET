@@ -35,8 +35,11 @@ namespace HyperV
             }
         }
 
-        ///<summary>The attached virtual hard disk.</summary>
+        ///<summary>The virtual hard disk which will be created new.</summary>
         public VirtualHardDisk VirtualHardDisk { get; set; }
+        
+        ///<summary>The virtual hard disk which will be attached to the VM.</summary>
+        public string VirtualHardDiskPathToAttach { get; set; }
 
         ///<summary>Initializes a new instance of the <see cref="VirtualHardDrive"/> class.</summary>
         public VirtualHardDrive()

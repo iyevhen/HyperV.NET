@@ -347,64 +347,66 @@ namespace HyperV
                             // Create Hard Drive
                             //==================================================================================
 
-                            ManagementObject virtualHardDriveResource = CreateResource(Resources.VirtualHardDrive);
-                            virtualHardDriveResource["Parent"] = scsiController.Path.Path; // Scsi Controller
-                            virtualHardDriveResource["AddressOnParent"] = address; // Port
-                            AddResourceSettings(systemSettings, new ManagementObject[] { virtualHardDriveResource }, out ManagementObject[] virtualHardDrives);
-                            ManagementObject virtualHardDrive = virtualHardDrives[0];
-
-                            //----------------------------------------------------------------------------------
-
-                            if (virtualHardDriveDefinition.VirtualHardDisk != null)
+                            using (ManagementObject virtualHardDriveResource = CreateResource(Resources.VirtualHardDrive))
                             {
-                                //==================================================================================
-                                // Create Virtual Hard Disk
-                                //==================================================================================
+                                virtualHardDriveResource["Parent"] = scsiController.Path.Path; // Scsi Controller
+                                virtualHardDriveResource["AddressOnParent"] = address;         // Port
+                                AddResourceSettings(systemSettings, new ManagementObject[] { virtualHardDriveResource }, out ManagementObject[] virtualHardDrives);
+                                ManagementObject virtualHardDrive = virtualHardDrives[0];
 
-                                ManagementObject virtualHardDiskSettings = CreateSettings(Settings.VirtualHardDisk);
-                                virtualHardDiskSettings["Type"] = virtualHardDriveDefinition.VirtualHardDisk.Type;
-                                virtualHardDiskSettings["Format"] = virtualHardDriveDefinition.VirtualHardDisk.Format;
-                                virtualHardDiskSettings["MaxInternalSize"] = (UInt64)(virtualHardDriveDefinition.VirtualHardDisk.Size * 1073741824); // Bytes
-                                virtualHardDiskSettings["Path"] = virtualHardDriveDefinition.VirtualHardDisk.Path;
-                                CreateVirtualHardDisk(virtualHardDiskSettings);
-                                virtualHardDiskSettings.Dispose();
+                                string virtualDiskPathToAttach = virtualHardDriveDefinition.VirtualHardDiskPathToAttach;
 
-                                //==================================================================================
-                                // Attach Virtual Hard Disk
-                                //==================================================================================
-
-                                ManagementObject virtualHardDiskResource = CreateResource(Resources.VirtualHardDisk);
-                                virtualHardDiskResource["Parent"] = virtualHardDrive.Path.Path;
-                                virtualHardDiskResource["HostResource"] = new string[] { virtualHardDriveDefinition.VirtualHardDisk.Path };
-
-                                //----------------------------------------------------------------------------------
-                                // Configure Quality of Service
-                                //----------------------------------------------------------------------------------
-
-                                if ((virtualHardDriveDefinition.MinimumIOPS > 0 || virtualHardDriveDefinition.MaximumIOPS > 0) &&
-                                    virtualHardDriveDefinition.MaximumIOPS >= virtualHardDriveDefinition.MinimumIOPS)
+                                if (virtualHardDriveDefinition.VirtualHardDisk != null)
                                 {
-                                    // Minimum IOPS
-                                    virtualHardDiskResource["IOPSReservation"] = virtualHardDriveDefinition.MinimumIOPS;
+                                    //==================================================================================
+                                    // Create Virtual Hard Disk
+                                    //==================================================================================
 
-                                    // Maximum IOPS
-                                    virtualHardDiskResource["IOPSLimit"] = virtualHardDriveDefinition.MaximumIOPS;
+                                    using (ManagementObject virtualHardDiskSettings = CreateSettings(Settings.VirtualHardDisk))
+                                    {
+                                        virtualHardDiskSettings["Type"] = virtualHardDriveDefinition.VirtualHardDisk.Type;
+                                        virtualHardDiskSettings["Format"] = virtualHardDriveDefinition.VirtualHardDisk.Format;
+                                        virtualHardDiskSettings["MaxInternalSize"] = (UInt64)(virtualHardDriveDefinition.VirtualHardDisk.Size * 1073741824); // Bytes
+                                        virtualHardDiskSettings["Path"] = virtualHardDriveDefinition.VirtualHardDisk.Path;
+                                        CreateVirtualHardDisk(virtualHardDiskSettings);
+
+                                        virtualDiskPathToAttach = virtualHardDriveDefinition.VirtualHardDisk.Path;
+                                    }
                                 }
 
-                                //----------------------------------------------------------------------------------
+                                if (!String.IsNullOrWhiteSpace(virtualDiskPathToAttach))
+                                {
+                                    //==================================================================================
+                                    // Attach Virtual Hard Disk
+                                    //==================================================================================
 
-                                AddResourceSettings(systemSettings, new ManagementObject[] { virtualHardDiskResource }, out _);
+                                    using (ManagementObject virtualHardDiskResource = CreateResource(Resources.VirtualHardDisk))
+                                    {
+                                        virtualHardDiskResource["Parent"] = virtualHardDrive.Path.Path;
+                                        virtualHardDiskResource["HostResource"] = new string[] { virtualDiskPathToAttach };
 
-                                //----------------------------------------------------------------------------------
+                                        //----------------------------------------------------------------------------------
+                                        // Configure Quality of Service
+                                        //----------------------------------------------------------------------------------
 
-                                virtualHardDiskResource.Dispose();
+                                        if ((virtualHardDriveDefinition.MinimumIOPS > 0 || virtualHardDriveDefinition.MaximumIOPS > 0) &&
+                                            virtualHardDriveDefinition.MaximumIOPS >= virtualHardDriveDefinition.MinimumIOPS)
+                                        {
+                                            // Minimum IOPS
+                                            virtualHardDiskResource["IOPSReservation"] = virtualHardDriveDefinition.MinimumIOPS;
+
+                                            // Maximum IOPS
+                                            virtualHardDiskResource["IOPSLimit"] = virtualHardDriveDefinition.MaximumIOPS;
+                                        }
+
+                                        AddResourceSettings(systemSettings, new ManagementObject[] { virtualHardDiskResource }, out _);
+                                    }
+                                }
+                                
                                 virtualHardDrives.Dispose();
                                 virtualHardDrive.Dispose();
                             }
 
-                            //----------------------------------------------------------------------------------
-
-                            virtualHardDriveResource.Dispose();
                             break;
 
                         case VirtualDvdDrive virtualDvdDriveDefinition:
@@ -414,7 +416,7 @@ namespace HyperV
 
                             ManagementObject virtualDvdDriveResource = CreateResource(Resources.VirtualDvdDrive);
                             virtualDvdDriveResource["Parent"] = scsiController.Path.Path; // Scsi Controller
-                            virtualDvdDriveResource["AddressOnParent"] = address; // Port
+                            virtualDvdDriveResource["AddressOnParent"] = address;         // Port
                             AddResourceSettings(systemSettings, new ManagementObject[] { virtualDvdDriveResource }, out ManagementObject[] virtualDvdDrives);
                             ManagementObject virtualDvdDrive = virtualDvdDrives[0];
 
