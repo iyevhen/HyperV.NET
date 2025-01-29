@@ -89,7 +89,7 @@ namespace HyperV
             foreach (ScsiController scsiController in virtualMachineDefinition.ScsiControllers)
                 foreach (IScsiDrive drive in scsiController.Drives)
                     if (drive?.GetType() == typeof(VirtualHardDrive))
-                        if (!String.IsNullOrWhiteSpace(((VirtualHardDrive)drive).VirtualHardDisk.Path))
+                        if (!String.IsNullOrWhiteSpace(((VirtualHardDrive)drive).VirtualHardDisk?.Path))
                             if (File.Exists($@"\\{host}\{((VirtualHardDrive)drive).VirtualHardDisk.Path.Replace(':', '$')}"))
                                 throw new ArgumentException("Virtual Hard Disk already exists.");
 
@@ -173,6 +173,8 @@ namespace HyperV
                 // Enable Virtual Non-Uniform Memory Access (NUMA) Nodes
                 systemSettings["VirtualNumaEnabled"] = true;
             }
+            
+            memoryResource["DynamicMemoryEnabled"] = virtualMachineDefinition.Memory.DynamicMemoryEnabled;
 
             //----------------------------------------------------------------------------------
             // Memory Weight
@@ -253,6 +255,8 @@ namespace HyperV
 
             // Checkpoint File Location
             systemSettings["SnapshotDataRoot"] = virtualMachineDefinition.Checkpoints.Path;
+            
+            systemSettings["AutomaticSnapshotsEnabled"] =virtualMachineDefinition.Checkpoints.UseAutomaticCheckpoints;
 
             //==================================================================================
             // Smart Paging File Location Configuration
@@ -700,7 +704,7 @@ namespace HyperV
             // Configure Operating System Shutdown
             //----------------------------------------------------------------------------------
 
-            if (!virtualMachineDefinition.IntegrationServices.Shutdown)
+            // if (!virtualMachineDefinition.IntegrationServices.Shutdown)
                 using (ManagementObject shutdownSettings = GetRelatedSettings(systemSettings, Settings.Shutdown))
                 {
                     if (virtualMachineDefinition.IntegrationServices.Shutdown)
@@ -714,7 +718,7 @@ namespace HyperV
             // Configure Time Synchronization
             //----------------------------------------------------------------------------------
 
-            if (!virtualMachineDefinition.IntegrationServices.TimeSynchronisation)
+            // if (!virtualMachineDefinition.IntegrationServices.TimeSynchronisation)
                 using (ManagementObject timeSynchronizationSettings = GetRelatedSettings(systemSettings, Settings.TimeSynchronization))
                 {
                     if (virtualMachineDefinition.IntegrationServices.TimeSynchronisation)
@@ -728,7 +732,7 @@ namespace HyperV
             // Configure Data Exchange
             //----------------------------------------------------------------------------------
 
-            if (!virtualMachineDefinition.IntegrationServices.DataExchange)
+            // if (!virtualMachineDefinition.IntegrationServices.DataExchange)
                 using (ManagementObject dataExchangeSettings = GetRelatedSettings(systemSettings, Settings.DataExchange))
                 {
                     if (virtualMachineDefinition.IntegrationServices.DataExchange)
@@ -742,7 +746,7 @@ namespace HyperV
             // Configure Heartbeat
             //----------------------------------------------------------------------------------
 
-            if (!virtualMachineDefinition.IntegrationServices.Heartbeat)
+            // if (!virtualMachineDefinition.IntegrationServices.Heartbeat)
                 using (ManagementObject heartbeatSettings = GetRelatedSettings(systemSettings, Settings.Heartbeat))
                 {
                     if (virtualMachineDefinition.IntegrationServices.Heartbeat)
@@ -756,7 +760,7 @@ namespace HyperV
             // Configure Backup (Volume Shadow Copy)
             //----------------------------------------------------------------------------------
 
-            if (!virtualMachineDefinition.IntegrationServices.VolumeShadowCopy)
+            // if (!virtualMachineDefinition.IntegrationServices.VolumeShadowCopy)
                 using (ManagementObject backupSettings = GetRelatedSettings(systemSettings, Settings.VolumeShadowCopy))
                 {
                     if (virtualMachineDefinition.IntegrationServices.VolumeShadowCopy)
@@ -770,7 +774,7 @@ namespace HyperV
             // Configure Guest Services
             //----------------------------------------------------------------------------------
 
-            if (!virtualMachineDefinition.IntegrationServices.GuestServices)
+            // if (!virtualMachineDefinition.IntegrationServices.GuestServices)
                 using (ManagementObject guestServicesSettings = GetRelatedSettings(systemSettings, Settings.GuestServices))
                 {
                     if (virtualMachineDefinition.IntegrationServices.GuestServices)

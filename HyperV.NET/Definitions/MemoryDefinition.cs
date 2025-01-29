@@ -68,6 +68,8 @@ namespace HyperV.Definitions
         ///<summary>The priority when balancing memory availability compared to other virtual machines.</summary>
         public MemoryWeight Weight { get; set; }
 
+        public bool DynamicMemoryEnabled { get; set; }
+
         ///<summary>Initializes a new instance of the <see cref="MemoryDefinition"/> class.</summary>
         public MemoryDefinition()
         {
@@ -76,6 +78,7 @@ namespace HyperV.Definitions
             Maximum = 1048576;
             Startup = 1024;
             Weight = MemoryWeight.Balanced;
+            DynamicMemoryEnabled = true;
         }
     }
 }

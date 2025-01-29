@@ -29,6 +29,8 @@
         ///<summary>The path where the Checkpoint files will be stored.</summary>
         public string Path { get; set; }
 
+        public bool UseAutomaticCheckpoints { get; set; }
+
         ///<summary>Initializes a new instance of the <see cref="CheckpointsDefinition"/> class.</summary>
         public CheckpointsDefinition()
         {
