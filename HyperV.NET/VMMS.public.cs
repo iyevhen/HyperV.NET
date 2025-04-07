@@ -115,7 +115,9 @@ namespace HyperV
             systemSettings["ConfigurationDataRoot"] = virtualMachineDefinition.Path;
 
             // Virtual Machine Generation
-            systemSettings["VirtualSystemSubtype"] = "Microsoft:Hyper-V:SubType:2"; // Generation 2
+            systemSettings["VirtualSystemSubtype"] = virtualMachineDefinition.Gen1 
+                ? "Microsoft:Hyper-V:SubType:1" 
+                : "Microsoft:Hyper-V:SubType:2";
 
             //==================================================================================
             // Secure Boot Configuration

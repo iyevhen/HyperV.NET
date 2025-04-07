@@ -58,6 +58,8 @@ namespace HyperV
         ///<summary>Defines the Smart Paging settings.</summary>
         public SmartPagingDefinition SmartPaging { get; set; } = new SmartPagingDefinition();
 
+        public bool Gen1 { get; set; }
+
         ///<summary>Initializes a new instance of the <see cref="VirtualMachineDefinition"/> class with the specified virtual machine name and configuration path.</summary>
         ///<param name="name">The name of the virtual machine.</param>
         ///<param name="path">The path where the configuration files will be stored.</param>
