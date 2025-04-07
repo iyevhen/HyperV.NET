@@ -115,8 +115,8 @@ namespace HyperV
             systemSettings["ConfigurationDataRoot"] = virtualMachineDefinition.Path;
 
             // Virtual Machine Generation
-            systemSettings["VirtualSystemSubtype"] = virtualMachineDefinition.Gen1 
-                ? "Microsoft:Hyper-V:SubType:1" 
+            systemSettings["VirtualSystemSubtype"] = virtualMachineDefinition.Generation > 0 
+                ? $"Microsoft:Hyper-V:SubType:{virtualMachineDefinition.Generation}" 
                 : "Microsoft:Hyper-V:SubType:2";
 
             //==================================================================================
