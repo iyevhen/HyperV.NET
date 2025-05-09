@@ -61,7 +61,7 @@ namespace HyperV
                 if (disposing)
                 {
                     vmms.Dispose();
-                    ss.Dispose();
+                    ss?.Dispose();
                     ims.Dispose();
                 }
 
@@ -693,9 +693,16 @@ namespace HyperV
 
                     //----------------------------------------------------------------------------------
 
-                    byte[] localKeyProtector = NewByGuardians();
-                    SetKeyProtector(securitySettings, localKeyProtector);
-                    ModifySecuritySettings(securitySettings);
+                    try
+                    {
+                        byte[] localKeyProtector = NewByGuardians();
+                        SetKeyProtector(securitySettings, localKeyProtector);
+                        ModifySecuritySettings(securitySettings);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
 
             //==================================================================================
@@ -777,6 +784,8 @@ namespace HyperV
             //----------------------------------------------------------------------------------
 
             // if (!virtualMachineDefinition.IntegrationServices.GuestServices)
+            try
+            {
                 using (ManagementObject guestServicesSettings = GetRelatedSettings(systemSettings, Settings.GuestServices))
                 {
                     if (virtualMachineDefinition.IntegrationServices.GuestServices)
@@ -784,8 +793,12 @@ namespace HyperV
                     else
                         guestServicesSettings["EnabledState"] = 3; // Disabled
                     ModifyGuestServiceSettings(new ManagementObject[] { guestServicesSettings }, out _);
-                    guestServicesSettings.Dispose();
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
             //==================================================================================
             // Cleanup

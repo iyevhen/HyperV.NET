@@ -109,6 +109,7 @@ namespace HyperV
                 case Resources.Processor: resourceSubType = "Microsoft:Hyper-V:Processor"; break;
                 case Resources.Memory: resourceSubType = "Microsoft:Hyper-V:Memory"; break;
                 case Resources.SCSIController: resourceSubType = "Microsoft:Hyper-V:Synthetic SCSI Controller"; break;
+                case Resources.IDEController: resourceSubType = "Microsoft:Hyper-V:Emulated IDE Controller"; break;
                 case Resources.VirtualHardDrive: resourceSubType = "Microsoft:Hyper-V:Synthetic Disk Drive"; break;
                 case Resources.VirtualHardDisk: resourceSubType = "Microsoft:Hyper-V:Virtual Hard Disk"; break;
                 case Resources.VirtualDvdDrive: resourceSubType = "Microsoft:Hyper-V:Synthetic DVD Drive"; break;
@@ -263,11 +264,21 @@ namespace HyperV
 
         internal ManagementObject GetSecurityService()
         {
-            using (ManagementClass managementClass = new ManagementClass("Msvm_SecurityService"))
+            try
             {
-                managementClass.Scope = virtualizationScope;
-                return managementClass.GetInstances().First();
+                using (ManagementClass managementClass = new ManagementClass("Msvm_SecurityService"))
+                {
+                    managementClass.Scope = virtualizationScope;
+
+                    return managementClass.GetInstances().First();
+                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
+            return null;
         }
 
         internal ManagementObject GetUntrustedGuardian()
@@ -380,11 +391,18 @@ namespace HyperV
 
         internal void ModifySecuritySettings(ManagementObject securitySettings)
         {
-            using (ManagementBaseObject inputParameters = ss.GetMethodParameters("ModifySecuritySettings"))
+            var sec = ss;
+            if (sec != null)
             {
-                inputParameters["SecuritySettingData"] = securitySettings.GetText(TextFormat.WmiDtd20);
-                using (ManagementBaseObject outputParameters = ss.InvokeMethod("ModifySecuritySettings", inputParameters, null))
-                    ValidateOutput(outputParameters);
+                using (ManagementBaseObject inputParameters = sec.GetMethodParameters("ModifySecuritySettings"))
+                {
+                    inputParameters["SecuritySettingData"] = securitySettings.GetText(TextFormat.WmiDtd20);
+                    using (ManagementBaseObject outputParameters =
+                           sec.InvokeMethod("ModifySecuritySettings", inputParameters, null))
+                    {
+                        ValidateOutput(outputParameters);
+                    }
+                }
             }
         }
 
@@ -448,12 +466,17 @@ namespace HyperV
 
         internal void SetKeyProtector(ManagementObject securitySettings, byte[] keyProtector)
         {
-            using (ManagementBaseObject inputParameters = ss.GetMethodParameters("SetKeyProtector"))
+            var sec = ss;
+            if (sec != null)
             {
-                inputParameters["SecuritySettingData"] = securitySettings.GetText(TextFormat.WmiDtd20);
-                inputParameters["KeyProtector"] = keyProtector;
-                using (ManagementBaseObject outputParameters = ss.InvokeMethod("SetKeyProtector", inputParameters, null))
-                    ValidateOutput(outputParameters);
+                using (ManagementBaseObject inputParameters = sec.GetMethodParameters("SetKeyProtector"))
+                {
+                    inputParameters["SecuritySettingData"] = securitySettings.GetText(TextFormat.WmiDtd20);
+                    inputParameters["KeyProtector"] = keyProtector;
+                    using (ManagementBaseObject outputParameters =
+                           sec.InvokeMethod("SetKeyProtector", inputParameters, null))
+                        ValidateOutput(outputParameters);
+                }
             }
         }
 
@@ -561,6 +584,7 @@ namespace HyperV
             Processor,
             Memory,
             SCSIController,
+            IDEController,
             VirtualHardDrive,
             VirtualHardDisk,
             VirtualDvdDrive,
